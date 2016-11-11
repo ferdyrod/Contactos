@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Contactos</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="nombre">Nombre</string>
+    <string name="movil">Móvil</string>
+    <string name="telefono">Telefóno</string>
+    <string name="email">E-mail</string>
+    <string name="save">Guardar</string>
+    <string name="menu_delete">Borrar</string>
+    <string name="menu_edit">Editar</string>
+</resources>

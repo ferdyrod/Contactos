@@ -1,8 +1,8 @@
 package com.ferdyrodriguez.contactos;
 
-import android.content.Context;
+import android.content.ContentValues;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -10,23 +10,22 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 public class AddingContact extends AppCompatActivity {
 
     private static final String TAG = "Contactos";
-    private static final String MY_PREF = "MyPrefs";
-    private static final String FILE_ID = "ID";
-
+    private static final String AUTHORITY = "com.ferdyrodriguez.contactoscontentprovider";
+    private static final Uri CONTENT_URI = Uri.parse("content://"+AUTHORITY+"/contactos");
     private EditText nombre;
     private EditText movil;
     private EditText telefono;
     private EditText email;
 
-    String carpeta = "Contactos";
+    private static final String DB_COL_NAME = "nombre";
+    private static final String DB_COL_CELLPHONE = "movil";
+    private static final String DB_COL_PHONE = "telefono";
+    private static final String DB_COL_EMAIL = "email";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,10 +44,6 @@ public class AddingContact extends AppCompatActivity {
         saveFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SharedPreferences prefs = getSharedPreferences(MY_PREF, Context.MODE_PRIVATE);
-                int id_count = prefs.getInt(FILE_ID,1);
-
-                String contactId = String.valueOf(id_count);
                 String name = nombre.getText().toString();
                 if( nombre.getText().toString().length() == 0 ) {
                     nombre.setError("First name is required!");
@@ -61,17 +56,16 @@ public class AddingContact extends AppCompatActivity {
                 }
                 String phone = telefono.getText().toString();
                 String correo = email.getText().toString();
-                Contacto contacto = new Contacto(contactId, name, cellphone, phone, correo);
-                Log.d(TAG, "Contact: " + contacto.toString());
                 Intent returnIntent = new Intent();
                 try {
-                    saveContact(contacto);
+                    ContentValues values = new ContentValues();
+                    values.clear();
+                    values.put(DB_COL_NAME, name);
+                    values.put(DB_COL_CELLPHONE, cellphone);
+                    values.put(DB_COL_PHONE, phone);
+                    values.put(DB_COL_EMAIL, correo);
+                    getApplicationContext().getContentResolver().insert(CONTENT_URI, values);
                     Log.d(TAG, "Contacto Guardado!");
-                    returnIntent.putExtra("Id", contacto.getContactId());
-                    returnIntent.putExtra("Nombre", contacto.getNombre());
-                    returnIntent.putExtra("Movil", contacto.getMovil());
-                    returnIntent.putExtra("Telefono", contacto.getTelefono());
-                    returnIntent.putExtra("Email", contacto.getEmail());
                     setResult(RESULT_OK, returnIntent);
                     finish();
                 } catch (Exception e){
@@ -81,30 +75,4 @@ public class AddingContact extends AppCompatActivity {
             }
         });
     }
-
-    private void saveContact(Contacto contacto) {
-
-        SharedPreferences prefs = getSharedPreferences(MY_PREF, Context.MODE_PRIVATE);
-        int count = prefs.getInt(FILE_ID,1);
-
-        String fichero = "contacto_"+ count +".txt";
-        String datos = contacto.toString();
-
-        FileOutputStream fOS;
-        File myDir = getDir(carpeta, Context.MODE_PRIVATE);
-        File ficheroContacto = new File (myDir, fichero);
-        try {
-            fOS = new FileOutputStream(ficheroContacto);
-            fOS.write(datos.getBytes());
-            fOS.close();
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putInt(FILE_ID, count++);
-            editor.commit();
-        } catch (FileNotFoundException e) {
-            Log.e(TAG, e.getMessage(), e);
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
-    }
-
 }

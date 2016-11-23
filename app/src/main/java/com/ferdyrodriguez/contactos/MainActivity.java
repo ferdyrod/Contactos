@@ -1,5 +1,6 @@
 package com.ferdyrodriguez.contactos;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -19,16 +20,16 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+
 public class MainActivity extends AppCompatActivity {
 
 
     private static final String TAG = "Contactos";
     private static final int ADD_REQUEST_CODE = 1;
     private static final int EDIT_REQUEST_CODE = 2;
-    private static final String AUTHORITY = "com.ferdyrodriguez.contactoscontentprovider";
-    private static final String DB_COL_NAME = "nombre";
-    private static final String DB_COL_CELLPHONE = "movil";
-    private static final Uri CONTENT_URI = Uri.parse("content://"+AUTHORITY+"/contactos");
 
     private SimpleCursorAdapter newAdapter;
     private ListView myListView;
@@ -56,17 +57,20 @@ public class MainActivity extends AppCompatActivity {
         newAdapter = new SimpleCursorAdapter(this,
                 R.layout.contact_item,
                 cursor,
-                new String[]{DB_COL_NAME, DB_COL_CELLPHONE},
+                new String[]{ContactContract.Contacto.COL_NAME, ContactContract.Contacto.COL_CELLPHONE},
                 new int[]{R.id.txtName, R.id.txtMovil},
                 0);
         myListView.setAdapter(newAdapter);
-        getContactsCP();
+
 
         registerForContextMenu(myListView);
     }
 
     private Cursor getContactsCP() {
-        Cursor cur = getContentResolver().query(CONTENT_URI, null, null, null, null);
+
+        String sortOrder = ContactContract.Contacto.COL_NAME + " ASC";
+
+        Cursor cur = getContentResolver().query(ContactContract.CONTENT_URI, null, null, null, sortOrder);
         return cur;
     }
 
@@ -96,15 +100,14 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if(sdAvailable && sdWriteAccess){
- //                   exportContactInfo(datos);
-                    Toast.makeText(this, "Contactos Exportados en la SD!", Toast.LENGTH_LONG).show();
+                    exportContactInfo();
                 } else {
                     Toast.makeText(this,"Hubo un problema, no se exportaron los contactos", Toast.LENGTH_LONG).show();
                 }
                 return true;
- //           case R.id.addSampleContact:
-  //              addingSampleContacts();
-  //              return true;
+            case R.id.addSampleContact:
+                addingSampleContacts();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -139,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case R.id.op_delete:
-                Uri uri = Uri.parse(CONTENT_URI + "/" + info.id);
+                Uri uri = Uri.parse(ContactContract.CONTENT_URI + "/" + info.id);
                 Log.d(TAG, "onContextItemSelected: uri " + uri);
                 int rowDeleted = getApplicationContext().getContentResolver().delete(uri,
                         null,
@@ -152,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return true;
             case R.id.op_edit:
-                Uri contactUri = Uri.parse(CONTENT_URI + "/" + info.id);
+                Uri contactUri = Uri.parse(ContactContract.CONTENT_URI + "/" + info.id);
                 Intent editIntent = new Intent(getApplicationContext(), EditingContact.class);
                 editIntent.putExtra("CONTACT_URI", contactUri);
                 startActivityForResult(editIntent, EDIT_REQUEST_CODE);
@@ -162,74 +165,76 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-/*    private void exportContactInfo(ArrayList<Contacto> datos) {
+    private void exportContactInfo() {
+
+        String[] projection = {
+                ContactContract.Contacto.COL_NAME,
+                ContactContract.Contacto.COL_CELLPHONE,
+                ContactContract.Contacto.COL_PHONE,
+                ContactContract.Contacto.COL_EMAIL
+        };
+
+        Cursor cur = getApplicationContext().getContentResolver().query(ContactContract.CONTENT_URI,
+                projection,
+                null,
+                null,
+                null);
+
         String fileName = "Contactos.txt";
         try {
             File sd_path = Environment.getExternalStorageDirectory();
+            Log.d(TAG, "exportContactInfo: path " + sd_path);
             File f = new File(sd_path.getAbsolutePath(), fileName);
             OutputStreamWriter fout =new OutputStreamWriter(
                     new FileOutputStream(f));
-            fout.write(datos.toString());
+            while(cur.moveToNext()){
+                String name = cur.getString(cur.getColumnIndex(ContactContract.Contacto.COL_NAME));
+                String cellphone = cur.getString(cur.getColumnIndex(ContactContract.Contacto.COL_CELLPHONE));
+                String phone = cur.getString(cur.getColumnIndex(ContactContract.Contacto.COL_PHONE));
+                String email = cur.getString(cur.getColumnIndex(ContactContract.Contacto.COL_EMAIL));
+                String contacto = "["+ name + "," + cellphone + "," + phone + "," +  email + "]\n";
+                fout.write(contacto);
+            }
             fout.close();
+            Toast.makeText(this, "Contactos Exportados en la SD!", Toast.LENGTH_LONG).show();
         } catch (Exception ex) {
-            Log.e("Ficheros", "Error al escribir fichero a tarjeta SD");
+            Log.e(TAG, "Error al escribir fichero a tarjeta SD");
         }
     }
-
-
 
     private void addingSampleContacts() {
         String[][] sampleContacts = new String[][]{
-                {"1", "Jose Chavez ", "654829426", "9493943432", "jchavez@gmail.com"},
-                {"2", "Madelyn Lovo", "656409813", "9493943542", "mlovo@hotmail.com"},
-                {"3", "Diego Aviles", "632958315", "949343552", "daviles@gmail.com"},
-                {"4", "Felipe Caja", "782817377", "949354672", "fcaja@yahoo.es"},
-                {"5", "Stephan Savic", "235896433", "915784532", "ssavic@atleticomadrid.es"},
-                {"6", "Sofia Hernandez", "764537904", "934684532", "shern@gamil.com"},
-                {"7", "Natalia Gomez", "832894673", "949543432", "ngomez@outlook.com"},
-                {"8", "Karina Melgar", "765849305", "983229432", "kmelgar@yahoo.es"},
-                {"9", "Teresa Valle", "758237584", "976494532", "tvalle@tvalle.com"},
-                {"10", "Andres Velasquez", "7462549474", "92854532", "avelasquez@pwc.com"},
-                {"11", "Mariane Miranda", "8837264736", "949457532", "mmiranda@gmail.com"}
+                {"Jose Chavez ", "654829426", "9493943432", "jchavez@gmail.com"},
+                {"Madelyn Lovo", "656409813", "9493943542", "mlovo@hotmail.com"},
+                {"Diego Aviles", "632958315", "949343552", "daviles@gmail.com"},
+                {"Felipe Caja", "782817377", "949354672", "fcaja@yahoo.es"},
+                {"Stephan Savic", "235896433", "915784532", "ssavic@atleticomadrid.es"},
+                {"Sofia Hernandez", "764537904", "934684532", "shern@gamil.com"},
+                {"Natalia Gomez", "832894673", "949543432", "ngomez@outlook.com"},
+                {"Karina Melgar", "765849305", "983229432", "kmelgar@yahoo.es"},
+                {"Teresa Valle", "758237584", "976494532", "tvalle@tvalle.com"},
+                {"Andres Velasquez", "7462549474", "92854532", "avelasquez@pwc.com"},
+                {"Mariane Miranda", "8837264736", "949457532", "mmiranda@gmail.com"}
         };
-        SharedPreferences prefs = getSharedPreferences(MY_PREF, Context.MODE_PRIVATE);
 
         for (int i = 0; i < sampleContacts.length; i++) {
-            int count = prefs.getInt(FILE_ID, 1);
-            String contactId = sampleContacts[i][0];
-            String name = sampleContacts[i][1];
-            String movil = sampleContacts[i][2];
-            String telefono = sampleContacts[i][3];
-            String email = sampleContacts[i][4];
-            Log.d(TAG, "addingSampleContacts: id " + contactId);
-            Log.d(TAG, "addingSampleContacts: name " + name);
-            Log.d(TAG, "addingSampleContacts: name " + movil);
-            Log.d(TAG, "addingSampleContacts: name " + telefono);
-            Log.d(TAG, "addingSampleContacts: name " + email);
-            Contacto contacto = new Contacto(contactId, name, movil, telefono, email);
+            String name = sampleContacts[i][0];
+            String movil = sampleContacts[i][1];
+            String telefono = sampleContacts[i][2];
+            String email = sampleContacts[i][3];
 
-            String contact = contacto.toString();
-            FileOutputStream fOS;
-            File myDir = getDir(carpeta, Context.MODE_PRIVATE);
-            String fichero = "contacto_" + count + ".txt";
-            File ficheroContacto = new File(myDir, fichero);
-            try {
-                fOS = new FileOutputStream(ficheroContacto);
-                fOS.write(contact.getBytes());
-                fOS.close();
-                SharedPreferences.Editor editor = prefs.edit();
-                Log.d(TAG, "saveContact: count++ : " + count++);
-                editor.putInt(FILE_ID, count++);
-                editor.commit();
-                Log.d(TAG, "saveContact: count " + prefs.getInt(FILE_ID, 1));
-            } catch (FileNotFoundException e) {
-                Log.e(TAG, e.getMessage(), e);
-            } catch (IOException e) {
-                Log.e(TAG, e.getMessage(), e);
-            }
-            datos.add(contacto);
-            adapter.notifyDataSetChanged();
+            ContentValues values = new ContentValues();
+
+            values.clear();
+            values.put(ContactContract.Contacto.COL_NAME, name);
+            values.put(ContactContract.Contacto.COL_CELLPHONE, movil);
+            values.put(ContactContract.Contacto.COL_PHONE, telefono);
+            values.put(ContactContract.Contacto.COL_EMAIL, email);
+
+            getApplicationContext().getContentResolver().insert(ContactContract.CONTENT_URI, values);
+
+            newAdapter.swapCursor(getContactsCP());
         }
     }
-    */
+
 }

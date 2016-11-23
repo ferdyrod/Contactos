@@ -15,11 +15,6 @@ import android.widget.Toast;
 public class EditingContact extends AppCompatActivity {
 
     private static final String TAG = "Contactos";
-    private static final String DB_COL_ID = "_id";
-    private static final String DB_COL_NAME = "nombre";
-    private static final String DB_COL_CELLPHONE = "movil";
-    private static final String DB_COL_PHONE = "telefono";
-    private static final String DB_COL_EMAIL = "email";
 
     private EditText nombre;
     private EditText movil;
@@ -66,16 +61,21 @@ public class EditingContact extends AppCompatActivity {
 
     private void getContactData(Uri contactoUri) {
 
-        String[] projection = {DB_COL_ID, DB_COL_NAME, DB_COL_CELLPHONE, DB_COL_PHONE, DB_COL_EMAIL};
+        String[] projection = {ContactContract.Contacto._ID,
+                ContactContract.Contacto.COL_NAME,
+                ContactContract.Contacto.COL_CELLPHONE,
+                ContactContract.Contacto.COL_PHONE,
+                ContactContract.Contacto.COL_EMAIL
+        };
 
         Cursor cur = getContentResolver().query(contactoUri, projection, null, null, null);
 
         if (cur != null) {
             cur.moveToFirst();
-            nombre.setText(cur.getString(cur.getColumnIndex("nombre")));
-            movil.setText(cur.getString(cur.getColumnIndex("movil")));
-            telefono.setText(cur.getString(cur.getColumnIndex("telefono")));
-            email.setText(cur.getString(cur.getColumnIndex("email")));
+            nombre.setText(cur.getString(cur.getColumnIndex(ContactContract.Contacto.COL_NAME)));
+            movil.setText(cur.getString(cur.getColumnIndex(ContactContract.Contacto.COL_CELLPHONE)));
+            telefono.setText(cur.getString(cur.getColumnIndex(ContactContract.Contacto.COL_PHONE)));
+            email.setText(cur.getString(cur.getColumnIndex(ContactContract.Contacto.COL_EMAIL)));
 
             cur.close();
         }
@@ -95,10 +95,10 @@ public class EditingContact extends AppCompatActivity {
 
         ContentValues values = new ContentValues();
         values.clear();
-        values.put(DB_COL_NAME, newName);
-        values.put(DB_COL_CELLPHONE, newMovil);
-        values.put(DB_COL_PHONE, newTelefono);
-        values.put(DB_COL_EMAIL, newEmail);
+        values.put(ContactContract.Contacto.COL_NAME, newName);
+        values.put(ContactContract.Contacto.COL_CELLPHONE, newMovil);
+        values.put(ContactContract.Contacto.COL_PHONE, newTelefono);
+        values.put(ContactContract.Contacto.COL_EMAIL, newEmail);
 
         getApplicationContext().getContentResolver().update(contactoUri, values, null, null);
     }

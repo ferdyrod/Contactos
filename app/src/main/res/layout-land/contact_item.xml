@@ -16,7 +16,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_weight="3"
+        android:layout_weight="6"
         android:layout_marginTop="@dimen/item_top_margin"
         android:layout_marginBottom="@dimen/item_botton_margin"
         android:layout_marginLeft="@dimen/activity_horizontal_margin">

@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ferdyrodriguez.contactos">
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -11,15 +11,20 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".ContactListActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AddingContact" />
-        <activity android:name=".EditingContact"></activity>
+        <activity
+            android:name=".AddingContactActivity"
+            android:parentActivityName=".ContactListActivity"/>
+        <activity android:name=".EditingContactActivity"
+            android:parentActivityName=".ContactListActivity"/>
+        <activity android:name=".ContactDetailActivity"
+            android:parentActivityName=".ContactListActivity"></activity>
     </application>
 
 </manifest>

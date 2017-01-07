@@ -8,4 +8,8 @@
     <string name="save">Guardar</string>
     <string name="menu_delete">Borrar</string>
     <string name="menu_edit">Editar</string>
+    <string name="contact_saved">Información del Contacto actualizada</string>
+    <string name="contact_not_saved">Hubo problemas al guardar contacto, intenta de nuevo.</string>
+    <string name="contact_not_deleted">Hubo un problema borrando el contacto</string>
+    <string name="contacts_exported">Contactos Exportados en la SD!</string>
 </resources>
